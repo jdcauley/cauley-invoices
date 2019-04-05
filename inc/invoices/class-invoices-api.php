@@ -101,6 +101,23 @@ if ( class_exists( 'Cauley\Invoices\Plugin' ) ) {
 			return $response;
 		}
 
+		public function update( \WP_REST_Request $request, \WP_REST_Response $response ) {
+			$params     = $request->get_params();
+
+			$updated = self::$models->cauley_invoices->upsert(
+				$params,
+				array( 'id' => intval( $params['id'] ) )
+			);
+
+			if ( empty( $updated ) ) {
+				return new \WP_Error( 409, __( 'Entry Not Updated', 'mediavine' ), array( 'message' => __( 'A conflict occurred and the Creation could not be updated', 'mediavine' ) ) );
+			}
+
+			$response->set_status( 200 );
+
+			return $response;
+		}
+
 		function routes() {
 			register_rest_route( "$this->api_route/$this->api_version",
 				'/invoices',
@@ -167,19 +184,22 @@ if ( class_exists( 'Cauley\Invoices\Plugin' ) ) {
 							return true;
 						},
 					),
-					// array(
-					// 	'methods'             => \WP_REST_Server::EDITABLE,
-					// 	'callback'            => function ( \WP_REST_Request $request ) {
-					// 		return \Mediavine\API_Services::middleware(
-					// 			array(
-					// 				array( $this->api, 'find_one' ),
-					// 				array( $this->api, 'update' ),
-					// 			),
-					// 			$request
-					// 		);
-					// 	},
-					// 	'permission_callback' => array( self::$api_services, 'permitted' ),
-					// ),
+					array(
+						'methods'             => \WP_REST_Server::EDITABLE,
+						'callback'            => function ( \WP_REST_Request $request ) {
+							return \Mediavine\API_Services::middleware(
+								array(
+									array( $this, 'validation'),
+									array( $this, 'update' ),
+									array( $this, 'find_one' ),
+								),
+								$request
+							);
+						},
+						'permission_callback' => function( \WP_REST_Request $request ) {
+							return true;
+						},
+					),
 				)
 			);
 		}
