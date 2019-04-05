@@ -2,9 +2,9 @@
 
 namespace Cauley\Invoices;
 
-// require_once( 'inc/class-mv-dbi.php');
-// require_once( 'inc/class-api-services.php');
-// require_once( 'inc/class-invoices.php' );
+require_once( 'inc/class-mv-dbi.php');
+require_once( 'inc/class-api-services.php');
+require_once( 'inc/invoices/class-invoices.php' );
 
 if ( ! defined( 'ABSPATH' ) ) {
 	die;
@@ -12,9 +12,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Plugin {
 
-	const VERSION = '0.0.1';
+	const VERSION = '0.0.4';
 
-	const DB_VERSION = '0.0.1';
+	const DB_VERSION = '0.0.4';
 
 	const PLUGIN_DOMAIN = 'cauley_invoices';
 
@@ -32,9 +32,9 @@ class Plugin {
 
 	public static function get_instance() {
 		if ( null === self::$instance ) {
-			self::$models = new \stdClass;
 			self::$instance = new self;
 			self::$instance->init();
+			Invoices::get_instance();
 		}
 		return self::$instance;
 	}
@@ -64,16 +64,19 @@ class Plugin {
 	}
 
 	public function init() {
-		// self::$models_v2    = \Mediavine\MV_DBI::get_models(
-		// 	array(
-		// 		'posts',
-		// 	)
-		// );
+
+		register_activation_hook( self::get_activation_path(), array( $this, 'plugin_activation' ) );
+		register_deactivation_hook( self::get_activation_path(), array( $this, 'plugin_deactivation' ) );
 
 		add_action( self::PLUGIN_DOMAIN . '_plugin_activated', array( $this, 'generate_tables' ), 20 );
+
+		self::$models = \Mediavine\MV_DBI::get_models(
+			array(
+				'cauley_invoices',
+			)
+		);
 	}
 
 }
 
 $Plugin = Plugin::get_instance();
-$Plugin->init();
