@@ -5,6 +5,7 @@ namespace Cauley\Invoices;
 require_once( 'inc/class-mv-dbi.php');
 require_once( 'inc/class-api-services.php');
 require_once( 'inc/invoices/class-invoices.php' );
+require_once( 'inc/invoices/class-invoices-api.php' );
 
 if ( ! defined( 'ABSPATH' ) ) {
 	die;
@@ -22,9 +23,11 @@ class Plugin {
 
 	const PLUGIN_ACTIVATION_FILE = 'cauley-invoices.php';
 
-	public $api_route = 'cauley-invoices';
+	public $api_route = 'cauley';
 
 	public $api_version = 'v1';
+
+	public static $api_services = null;
 
 	public static $models = null;
 
@@ -34,7 +37,9 @@ class Plugin {
 		if ( null === self::$instance ) {
 			self::$instance = new self;
 			self::$instance->init();
+			self::$api_services = \Mediavine\API_Services::get_instance();
 			Invoices::get_instance();
+			Invoices_API::get_instance();
 		}
 		return self::$instance;
 	}
