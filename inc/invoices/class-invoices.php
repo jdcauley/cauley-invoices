@@ -48,6 +48,30 @@ if ( class_exists( 'Cauley\Invoices\Plugin' ) ) {
 				return $tables;
 			} );
 
+			add_filter( 'mv_dbi_before_create_' . $this->table_name, [ $this, 'normalize_in' ] );
+			add_filter( 'mv_dbi_before_update_' . $this->table_name, [ $this, 'normalize_in' ] );
+
+			add_filter( 'mv_dbi_after_create_' . $this->table_name, [ $this, 'normalize_out' ] );
+			add_filter( 'mv_dbi_after_select_' . $this->table_name, [ $this, 'normalize_out' ] );
+
+		}
+
+		function normalize_in( $data ) {
+			if ( ! empty($data['metadata']) ) {
+				$data['metadata'] = wp_json_encode( $data['metadata'] );
+			}
+			return $data;
+		}
+
+		function normalize_out ( $data ) {
+			if ( ! empty($data->metadata) ) {
+				$data->metadata = json_decode( $data->metadata );
+			}
+			$data->id            = intval( $data->id );
+			if ( ! empty( $data->thumbnail_id ) ) {
+				$data->thumbnail_uri = \wp_get_attachment_url( $data->thumbnail_id );
+			}
+			return $data;
 		}
 	}
 }

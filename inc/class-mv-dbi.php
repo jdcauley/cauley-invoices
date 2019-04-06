@@ -258,7 +258,11 @@ if ( ! class_exists('Mediavine\MV_DBI') ) {
 		}
 
 		public function after_select( $data ) {
-
+			foreach( $data as &$item ) {
+				$item        = apply_filters( 'mv_dbi_after_select', $item, $this->table_name );
+				$filter_name = 'mv_dbi_after_select_' . $this->short_name;
+				$item        = apply_filters( $filter_name, $item );
+			}
 			return $data;
 		}
 
@@ -497,7 +501,7 @@ if ( ! class_exists('Mediavine\MV_DBI') ) {
 			$prepared_statement = $wpdb->prepare( $build_sql, $prepare_array );
 
 			$select = $wpdb->get_results( $prepared_statement );
-
+			$select = $this->after_select( $select );
 			// return without array if array
 			if ( ! empty( $select ) && is_array( $select ) ) {
 				return $select[0];
@@ -633,6 +637,8 @@ if ( ! class_exists('Mediavine\MV_DBI') ) {
 			} else {
 				$results = $wpdb->get_results( $build_sql . $order_sql );
 			}
+
+			$results = $this->after_select( $results );
 
 			return $results;
 		}

@@ -57,22 +57,8 @@ if ( class_exists( 'Cauley\Invoices\Plugin' ) ) {
 			$query_args['where'] = array();
 
 			$invoices = self::$models->cauley_invoices->find( $query_args );
-
 			$response->data = array();
-			$data = array();
-			if ( wp_is_numeric_array( $invoices ) ) {
-				foreach ( $invoices as $invoice ) {
-					$invoice->id            = intval( $invoice->id );
-					$invoice->thumbnail_uri = \wp_get_attachment_url( $invoice->thumbnail_id );
-					if ( ! empty( $invoice->metadata) ) {
-						$invoice->metadata = json_decode( $invoice->metadata );
-					}
-					$data[] = $invoice;
-				}
-				$response->set_status( 200 );
-			}
-
-			$response = API_Services::set_response_data( $data, $response );
+			$response = API_Services::set_response_data( $invoices, $response );
 			$response->header( 'X-Total-Items', self::$models->cauley_invoices->get_count( $query_args ) );
 			return $response;
 		}
